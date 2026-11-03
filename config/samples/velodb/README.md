@@ -13,15 +13,22 @@ Use only one profile. No running-cluster validation is implied by these samples.
   shared CRDs or delete CRDs as an upgrade mechanism.
 - Operator and CRDs: v2.35.0. Download CRDs from
   [the VeloDB mirror](https://github.com/velodb/fdb-kubernetes-operator/tree/v2.35.0/config/crd/bases),
-  pinned to upstream commit
-  `fd8fdbd2c6d14375116e97977f1f49e3d17b84a3`. See
-  [provenance and CRD checksums](UPSTREAM.md).
+  matching the controller version used here.
 - Controller: `velodb/fdb-kubernetes-operator:v2.35.0`.
 - Controller client initializer and database: `velodb/fdb-kubernetes-monitor:7.3.69`.
   Both images support linux/amd64 and linux/arm64.
 - MetaService must include a FoundationDB client compatible with FDB 7.3. A
   controller client initializer does not change the client library in MetaService.
   Do not use this guide to upgrade an existing FDB database or its consumers.
+
+## Deployment customizations
+
+`operator.yaml` is based on the generic [controller deployment](../deployment.yaml),
+with VeloDB images, a `fdb-system` namespace scope, only the 7.3 client initializer,
+and explicit resource/security settings. Optional Node-read RBAC is omitted.
+`monitor-rbac.yaml` provides a dedicated namespace-scoped account for database Pods.
+The optional 7.1 client patch is for amd64 only. These profiles are for fresh
+installations and do not upgrade existing Operators, databases, shared CRDs or Helm releases.
 
 ## Resource planning
 
@@ -80,11 +87,11 @@ kubectl --kubeconfig "$KUBECONFIG" wait --for=condition=Established --timeout=60
   crd/foundationdbclusters.apps.foundationdb.org \
   crd/foundationdbbackups.apps.foundationdb.org \
   crd/foundationdbrestores.apps.foundationdb.org
-kubectl --kubeconfig "$KUBECONFIG" -n fdb-system apply -f config/samples/velodb/v2.35.0/operator.yaml
+kubectl --kubeconfig "$KUBECONFIG" -n fdb-system apply -f config/samples/velodb/operator.yaml
 kubectl --kubeconfig "$KUBECONFIG" -n fdb-system rollout status \
   deployment/fdb-kubernetes-operator-controller-manager --timeout=300s
-kubectl --kubeconfig "$KUBECONFIG" -n fdb-system apply -f config/samples/velodb/v2.35.0/monitor-rbac.yaml
-cp config/samples/velodb/v2.35.0/cluster-single.yaml /tmp/fdb-cluster.yaml
+kubectl --kubeconfig "$KUBECONFIG" -n fdb-system apply -f config/samples/velodb/monitor-rbac.yaml
+cp config/samples/velodb/cluster-single.yaml /tmp/fdb-cluster.yaml
 ```
 
 For double mode, copy `cluster-double.yaml` instead. Replace both occurrences of
@@ -120,7 +127,7 @@ its controller client before creating the database:
 ```sh
 kubectl --kubeconfig "$KUBECONFIG" -n fdb-system patch \
   deployment fdb-kubernetes-operator-controller-manager --type=strategic \
-  --patch-file config/samples/velodb/v2.35.0/operator-client-7.1.patch.yaml
+  --patch-file config/samples/velodb/operator-client-7.1.patch.yaml
 kubectl --kubeconfig "$KUBECONFIG" -n fdb-system rollout status \
   deployment/fdb-kubernetes-operator-controller-manager --timeout=300s
 ```
