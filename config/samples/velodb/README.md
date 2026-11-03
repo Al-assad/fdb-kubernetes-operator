@@ -12,7 +12,7 @@ Use only one profile. No running-cluster validation is implied by these samples.
   existing FDB installations before installing these definitions. Do not overwrite
   shared CRDs or delete CRDs as an upgrade mechanism.
 - Operator and CRDs: v2.35.0. Download CRDs from
-  [the VeloDB mirror](https://github.com/velodb/fdb-kubernetes-operator/tree/v2.35.0/config/crd/bases),
+  [the VeloDB mirror](https://github.com/velodb/fdb-kubernetes-operator/tree/branch-2.35.0/config/crd/bases),
   matching the controller version used here.
 - Controller: `velodb/fdb-kubernetes-operator:v2.35.0`.
 - Controller client initializer and database: `velodb/fdb-kubernetes-monitor:7.3.69`.
@@ -60,8 +60,8 @@ also recalculate memory and CPU for multiple servers.
 ## Install from a checkout of this repository
 
 These hand-maintained profiles are separate from the generated samples directly
-under `config/samples/`. Use the CRDs from tag `v2.35.0` even when this checkout
-is on a newer revision; controller and database images stay pinned below.
+under `config/samples/`. Use the CRDs and profiles from `branch-2.35.0`,
+which is maintained for Operator v2.35.0; controller and database images stay pinned below.
 
 Set the path to your kubeconfig explicitly; commands below run from the repository
 root and do not change the current context.
@@ -78,7 +78,7 @@ its maintainer. Otherwise:
 
 ```sh
 kubectl --kubeconfig "$KUBECONFIG" create namespace fdb-system
-FDB_CRDS=https://raw.githubusercontent.com/velodb/fdb-kubernetes-operator/v2.35.0/config/crd/bases
+FDB_CRDS=https://raw.githubusercontent.com/velodb/fdb-kubernetes-operator/branch-2.35.0/config/crd/bases
 for resource in clusters backups restores; do
   kubectl --kubeconfig "$KUBECONFIG" apply --server-side \
     -f "$FDB_CRDS/apps.foundationdb.org_foundationdb${resource}.yaml"
